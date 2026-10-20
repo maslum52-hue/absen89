@@ -28,6 +28,9 @@ let authFlowGeneration=0;
 let logoutLock=localStorage.getItem('hadir-logout')==='true';
 window.hadirQrActive=localStorage.getItem('hadir-qr-active')==='true';
 let qrCameraStream=null;
+let qrScanGeneration=0;
+let qrScanBusy=false;
+let selectedQrCameraId='';
 let activeSupabaseSessionId=null;
 let teachersData=[];
 const openedQrSession=(location.pathname.match(/^\/QR-(HADIR-\d{8})$/i)||[])[1]?.toUpperCase()||'';
@@ -153,7 +156,8 @@ function createQrSvg(text){
   const path=[];matrix.forEach((row,y)=>row.forEach((dark,x)=>{if(dark)path.push(`M${x} ${y}h1v1h-1z`)}));
   return `<svg viewBox="-4 -4 ${size+8} ${size+8}" role="img" aria-label="Kode QR sesi absensi"><rect x="-4" y="-4" width="${size+8}" height="${size+8}" fill="white"/><path d="${path.join('')}" fill="#18375b" shape-rendering="crispEdges"/></svg>`;
 }
-function stopQrCamera(){if(qrCameraStream){qrCameraStream.getTracks().forEach(track=>track.stop());qrCameraStream=null}const video=document.getElementById('qrVideo');if(video){video.pause();video.srcObject=null;video.hidden=true}const button=document.getElementById('scanQr');if(button)button.textContent='Buka Kamera Pemindai'}
+function stopQrCamera(){qrScanGeneration++;qrScanBusy=false;window.qrDecoderControls?.stop?.();window.qrDecoderControls=null;if(qrCameraStream){qrCameraStream.getTracks().forEach(track=>track.stop());qrCameraStream=null}const video=document.getElementById('qrVideo');if(video){video.pause();video.srcObject=null;video.hidden=true}const frame=document.getElementById('qrCameraFrame');if(frame)frame.hidden=true;const button=document.getElementById('scanQr');if(button){button.textContent='Buka Kamera Pemindai';button.setAttribute('aria-pressed','false')}const controls=document.getElementById('qrCameraControls');if(controls)controls.hidden=true}
+function prepareQrScannerControls(video){let frame=document.getElementById('qrCameraFrame');if(!frame){frame=document.createElement('div');frame.id='qrCameraFrame';frame.className='qr-camera-frame';frame.hidden=true;video.parentNode.insertBefore(frame,video);frame.append(video);const guide=document.createElement('span');guide.className='qr-scan-guide';guide.setAttribute('aria-hidden','true');frame.append(guide)}let controls=document.getElementById('qrCameraControls');if(!controls){controls=document.createElement('div');controls.id='qrCameraControls';controls.className='qr-camera-controls';controls.hidden=true;const label=document.createElement('label');label.textContent='Pilih kamera';const select=document.createElement('select');select.id='qrCameraSelect';select.setAttribute('aria-label','Pilih kamera untuk memindai QR');label.append(select);controls.append(label);video.parentNode.insertBefore(controls,document.getElementById('scanQr'))}return controls}
 async function recordQrAttendance(value){
   if(!window.hadirQrActive){showToast('Mulai sesi absensi QR terlebih dahulu');return}
   let nis=String(value||'').trim();try{const url=new URL(nis);nis=url.searchParams.get('nis')||nis}catch{}
@@ -173,15 +177,24 @@ async function toggleSupabaseSession(){
 }
 async function startQrCamera(){
   const video=document.getElementById('qrVideo');if(!video)return;
+  prepareQrScannerControls(video);
   if(qrCameraStream){stopQrCamera();return}
   if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia){showToast('Browser memblokir kamera. Buka aplikasi di komputer melalui http://localhost:8000 atau gunakan HTTPS.');return}
   try{
-    qrCameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30,max:30}},audio:false});video.srcObject=qrCameraStream;video.muted=true;video.playsInline=true;video.hidden=false;await video.play();
-    const button=document.getElementById('scanQr');if(button)button.textContent='Tutup Kamera';
-    const track=qrCameraStream.getVideoTracks()[0],capabilities=track.getCapabilities?.();if(capabilities?.focusMode?.includes('continuous'))track.applyConstraints({advanced:[{focusMode:'continuous'}]}).catch(()=>{});if(capabilities?.zoom){const zoom=Math.min(capabilities.zoom.max,1.5);if(zoom>capabilities.zoom.min)track.applyConstraints({advanced:[{zoom}]}).catch(()=>{})}
-    if(!('BarcodeDetector'in window)){showToast('Kamera aktif. Browser belum mendukung dekoder QR; gunakan input NIS manual atau Chrome/Edge terbaru.');return}
-    let detector;try{const supported=await BarcodeDetector.getSupportedFormats?.();const wanted=['qr_code','code_128','code_39','ean_13','ean_8','itf','upc_a','upc_e'];const formats=supported?wanted.filter(format=>supported.includes(format)):['qr_code'];if(!formats.length)throw new Error('barcode formats unsupported');detector=new BarcodeDetector({formats})}catch{showToast('Kamera aktif, tetapi dekoder barcode tidak tersedia pada browser ini. Gunakan input NIS manual.');return}
-    const scan=async()=>{if(!qrCameraStream)return;try{if(video.readyState>=2){const codes=await detector.detect(video);if(codes.length){const scanned=codes[0].rawValue;stopQrCamera();recordQrAttendance(scanned);return}}}catch{}setTimeout(scan,80)};scan();
+    const cameraSelect=document.getElementById('qrCameraSelect');
+    const videoConstraint=selectedQrCameraId?{deviceId:{exact:selectedQrCameraId}}:{facingMode:{ideal:'environment'}};
+    qrCameraStream=await navigator.mediaDevices.getUserMedia({video:{...videoConstraint,width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:30,max:30}},audio:false});video.srcObject=qrCameraStream;video.muted=true;video.playsInline=true;video.setAttribute('playsinline','');video.setAttribute('autoplay','');video.hidden=false;document.getElementById('qrCameraFrame').hidden=false;await video.play();
+    const button=document.getElementById('scanQr');if(button){button.textContent='Tutup Kamera';button.setAttribute('aria-pressed','true')}
+    const controls=document.getElementById('qrCameraControls');if(controls)controls.hidden=false;
+    const track=qrCameraStream.getVideoTracks()[0],capabilities=track.getCapabilities?.();if(capabilities?.focusMode?.includes('continuous'))track.applyConstraints({advanced:[{focusMode:'continuous'}]}).catch(()=>{});
+    if(cameraSelect){const devices=await navigator.mediaDevices.enumerateDevices();const cameras=devices.filter(device=>device.kind==='videoinput');cameraSelect.replaceChildren(...cameras.map((camera,index)=>{const option=document.createElement('option');option.value=camera.deviceId;option.textContent=camera.label||`Kamera ${index+1}`;option.selected=camera.deviceId===track.getSettings().deviceId;return option}));cameraSelect.hidden=cameras.length<2;if(controls)controls.hidden=cameras.length<2;cameraSelect.onchange=()=>{selectedQrCameraId=cameraSelect.value;stopQrCamera();startQrCamera()}}
+    const generation=++qrScanGeneration;
+    if('BarcodeDetector'in window){
+      let detector;try{const supported=await BarcodeDetector.getSupportedFormats?.();const wanted=['qr_code','code_128','code_39','ean_13','ean_8','itf','upc_a','upc_e'];const formats=supported?wanted.filter(format=>supported.includes(format)):['qr_code'];detector=new BarcodeDetector({formats:formats.length?formats:['qr_code']})}catch{detector=null}
+      if(detector){const scan=async()=>{if(!qrCameraStream||generation!==qrScanGeneration)return;if(video.readyState>=2&&!qrScanBusy){qrScanBusy=true;try{const codes=await detector.detect(video);if(codes.length&&generation===qrScanGeneration){const scanned=codes[0].rawValue;stopQrCamera();recordQrAttendance(scanned);return}}catch{}finally{qrScanBusy=false}}if(generation===qrScanGeneration)window.setTimeout(scan,100)};scan();return}
+    }
+    try{const{BrowserMultiFormatReader}=await import('https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/+esm');if(generation!==qrScanGeneration)return;const reader=new BrowserMultiFormatReader(undefined,{delayBetweenScanAttempts:80,delayBetweenScanSuccess:500});const controls=await reader.decodeFromVideoElement(video,(result)=>{if(!result||generation!==qrScanGeneration)return;const scanned=result.getText();stopQrCamera();recordQrAttendance(scanned)});if(generation===qrScanGeneration)window.qrDecoderControls=controls;else controls.stop()}
+    catch{showToast('Pemindai QR tidak tersedia. Periksa koneksi internet, atau gunakan Chrome/Edge terbaru. Kamera tetap aktif; NIS juga bisa dimasukkan manual.')}
   }catch(error){stopQrCamera();const message=error?.name==='NotAllowedError'?'Izin kamera ditolak. Aktifkan izin kamera untuk situs ini dari ikon gembok di bilah alamat.':error?.name==='NotFoundError'?'Kamera tidak ditemukan pada perangkat ini.':error?.name==='NotReadableError'?'Kamera sedang digunakan aplikasi lain. Tutup aplikasi tersebut lalu coba lagi.':'Kamera tidak dapat dibuka. Gunakan localhost atau HTTPS, lalu izinkan akses kamera.';showToast(message)}
 }
 function tableMarkup(headers,rows){return `<div class="module-table-scroll"><table class="module-table"><thead><tr>${headers.map(x=>`<th>${h(x)}</th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${row.map((x,i)=>`<td>${i===row.length-1&&['Hadir','Aktif','Terlambat','Izin','Sakit','Alpa','Belum Absen'].includes(x)?`<span class="module-status status-${x.toLowerCase().replaceAll(' ','-')}">${h(x)}</span>`:h(x)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}

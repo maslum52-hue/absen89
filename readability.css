@@ -29,6 +29,44 @@ body {
 .breadcrumb { font-size: 12px; }
 .profile-copy b { font-size: 11px; }
 
+.qr-camera-frame {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  margin: 12px auto;
+  overflow: hidden;
+  border: 1px solid #dbe5f2;
+  border-radius: 16px;
+  background: #07172b;
+  box-shadow: 0 12px 30px #12294722;
+}
+.qr-camera-frame[hidden], .qr-camera-frame video[hidden] { display: none; }
+.qr-camera-frame .qr-video {
+  display: block;
+  width: 100%;
+  min-height: 220px;
+  max-height: min(56vh, 440px);
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  object-fit: cover;
+  background: #07172b;
+}
+.qr-scan-guide {
+  position: absolute;
+  inset: 20% 17%;
+  border: 2px solid #f7cb58;
+  border-radius: 20px;
+  box-shadow: 0 0 0 999px #07172b26;
+  pointer-events: none;
+}
+.qr-camera-controls { margin: 0 0 12px; }
+.qr-camera-controls[hidden] { display: none; }
+.qr-camera-controls label { display: grid; gap: 6px; color: #526783; font-size: 12px; font-weight: 700; }
+.qr-camera-controls select { width: 100%; min-height: 44px; padding: 9px 12px; border: 1px solid #d8e2ef; border-radius: 10px; color: #193453; background: #fff; font: inherit; }
+#scanQr { min-height: 46px; font-size: 14px; font-weight: 700; }
+.qr-camera-tip { line-height: 1.6; }
+
 @media (max-width: 850px) {
   .nav-item { font-size: 14px; min-height: 44px; }
   .nav-label { font-size: 10px; }
