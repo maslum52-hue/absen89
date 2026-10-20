@@ -1,0 +1,57 @@
+/* Larger, clearer type across the dashboard and navigation. */
+body {
+  font-size: 14px;
+}
+
+.nav-item { font-size: 14px; }
+.nav-label { font-size: 10px; }
+.school-info b { font-size: 11px; }
+.school-info span { font-size: 10px; }
+.school-welcome { font-size: 14px; }
+.welcome-row .eyebrow { font-size: 10px; }
+.welcome-row h1 { font-size: 29px; }
+.welcome-row .subtitle { font-size: 12px; }
+.stat-title { font-size: 11px; }
+.stat-number { font-size: 29px; }
+.stat-note { font-size: 10px; }
+.panel-heading h2 { font-size: 15px; }
+.panel-heading p { font-size: 11px; }
+.chart-legend { font-size: 10px; }
+.y-labels, .x-labels { font-size: 9px; }
+.distribution-list > div { font-size: 10px; }
+.distribution-list b { font-size: 11px; }
+.activity-panel .panel-heading h2 { font-size: 14px; }
+.activity-panel .panel-heading p { font-size: 11px; }
+.activity-panel thead th, thead th { font-size: 9px; }
+.activity-panel tbody td, tbody td { font-size: 11px; }
+.status { font-size: 10px; }
+.table-footer { font-size: 10px; }
+.breadcrumb { font-size: 12px; }
+.profile-copy b { font-size: 11px; }
+
+@media (max-width: 850px) {
+  .nav-item { font-size: 14px; min-height: 44px; }
+  .nav-label { font-size: 10px; }
+  .school-info b { font-size: 11px; }
+  .welcome-row h1 { font-size: 24px; }
+  .welcome-row .subtitle { font-size: 11px; }
+  .stat-title { font-size: 11px; }
+  .stat-note { font-size: 10px; }
+  .panel-heading h2 { font-size: 14px; }
+  .panel-heading p { font-size: 11px; }
+  .activity-panel thead th { font-size: 9px; }
+  .activity-panel tbody td { font-size: 11px; }
+}
+
+@media (max-width: 600px) {
+  .school-welcome { font-size: 11px; }
+  .welcome-row h1 { font-size: 22px; }
+  .welcome-row .subtitle { font-size: 10px; }
+  .stat-title { font-size: 10px; }
+  .stat-number { font-size: 25px; }
+  .stat-note { font-size: 9px; }
+  .panel-heading h2 { font-size: 14px; }
+  .panel-heading p { font-size: 10px; }
+  .activity-panel thead th { font-size: 9px; }
+  .activity-panel tbody td { font-size: 10px; }
+}
