@@ -1,0 +1,5 @@
+.school-picker .school-avatar.school-logo{display:block;flex:none;width:36px;height:36px;padding:2px;object-fit:contain;border:1px solid #ffffff24;border-radius:9px;background:#fff}
+.school-picker .school-info b{font-size:9px;letter-spacing:-.1px}
+.school-welcome{gap:9px}
+.welcome-school-logo{width:25px;height:25px;object-fit:contain;border-radius:6px;background:#fff;padding:1px;box-shadow:0 1px 4px #0e20352e;position:relative;z-index:1}
+@media(max-width:600px){.school-picker .school-avatar.school-logo{width:33px;height:33px}.welcome-school-logo{width:22px;height:22px}}

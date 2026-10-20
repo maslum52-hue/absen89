@@ -1,0 +1,8 @@
+.login-form{display:block}
+.login-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.login-field{min-width:0}
+.login-field .login-input-wrap{width:100%}
+.login-form>.login-submit,.login-form>.login-error{width:100%}
+.login-form>.login-error{display:block}
+.login-form>.login-error[hidden]{display:none}
+@media(max-width:430px){.login-fields{grid-template-columns:1fr;gap:2px}.login-field+.login-field{margin-top:8px}}

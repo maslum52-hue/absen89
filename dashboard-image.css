@@ -1,0 +1,5 @@
+.app-shell.dashboard-active .main-area{background:linear-gradient(180deg,rgba(246,248,252,.46) 0%,rgba(246,248,252,.30) 42%,rgba(246,248,252,.16) 100%),url('123.jpg') center center/cover fixed no-repeat}
+.app-shell.dashboard-active .content{background:transparent}
+.stats-grid .stat-card,.overview-grid .panel,.activity-panel{background:rgba(255,255,255,.84);backdrop-filter:blur(9px)}
+.overview-grid .panel:before,.activity-panel:before{opacity:.92}
+@media(max-width:850px){.app-shell.dashboard-active .main-area{background-attachment:scroll;background-position:center center}.stats-grid .stat-card,.overview-grid .panel,.activity-panel{background:rgba(255,255,255,.91)}}

@@ -1,0 +1,41 @@
+/* Final dashboard polish: clearer hierarchy and quieter surfaces. */
+.content{max-width:1320px;padding-top:20px;padding-left:38px;padding-right:38px}
+.school-welcome{height:40px;margin-bottom:13px;padding-left:16px;border-left-width:3px;border-radius:8px;background:linear-gradient(100deg,#18365e,#274f79);font-size:10px;letter-spacing:.45px;box-shadow:0 3px 10px #19375812}
+.welcome-row{min-height:116px;padding:20px 22px;margin-bottom:14px;border-radius:11px;background:linear-gradient(110deg,#19385f 0%,#244d78 100%);box-shadow:0 7px 18px #18375818}
+.welcome-row:before{width:250px;height:250px;right:11%;top:-165px;border-color:#ffffff0d}
+.welcome-row:after{width:170px;height:170px;right:18%;top:-105px;border-color:#e3b45121}
+.welcome-row h1{font-size:23px;letter-spacing:-.55px;margin:7px 0 4px}
+.welcome-row .subtitle{font-size:10px;color:#c8d4e2}
+.date-picker{min-width:148px;background:#ffffff10;border-color:#ffffff31}
+.stats-grid{gap:12px;margin-bottom:14px}
+.stat-card{min-height:104px;padding:13px 15px 12px;border-radius:9px;box-shadow:0 3px 12px #20395408;transition:transform .16s ease,box-shadow .16s ease}
+.stat-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px #20395412}
+.stat-top{gap:10px}
+.stat-title{font-size:9px;font-weight:600;color:#7e8ba0}
+.stat-number{font-size:24px;line-height:1.1;color:#1a3151;margin:8px 0 6px}
+.stat-icon{width:28px;height:28px;border:1px solid #e9eef5}
+.stat-note{font-size:8px;color:#95a0af}
+.overview-grid{gap:14px;margin-bottom:14px}
+.overview-grid .panel{min-height:224px;border-radius:9px;padding:15px 16px 10px;box-shadow:0 3px 12px #20395408}
+.panel-heading h2{font-size:12px;letter-spacing:-.1px;color:#203653}
+.panel-heading p{font-size:9px;color:#929eae}
+.distribution-panel .donut-wrap{min-height:139px}
+.donut{width:120px;height:120px;box-shadow:0 3px 10px #2d69a315}
+.donut:after{inset:10px}
+.distribution-panel .distribution-list{gap:11px}
+.distribution-panel .distribution-list>div{font-size:8px;color:#738196}
+.distribution-panel .distribution-list b{font-size:9px;color:#40546f}
+.attendance-panel .chart-wrap{height:157px;margin-top:15px}
+.attendance-panel .x-labels{font-size:8px;color:#8996a9}
+.attendance-panel .chart-line{stroke:#3a6797;stroke-width:2.2}
+.activity-panel{padding:14px 16px 0;border-radius:9px;box-shadow:0 3px 12px #20395408}
+.activity-heading{margin-bottom:12px}
+.activity-panel thead th{height:33px;background:#f7f9fc;color:#8794a6}
+.activity-panel tbody td{height:49px}
+.activity-panel tbody tr:hover{background:#fbfcfe}
+.status-present{background:#edf5f0;color:#41826c}
+.status-late{background:#fff5df;color:#a57832}
+.status-permission{background:#eef2f9;color:#607d9e}
+.main-footer{padding:13px 2px 0;color:#98a4b4}
+@media(max-width:850px){.content{padding-left:22px;padding-right:22px}}
+@media(max-width:600px){.content{padding:13px 12px}.school-welcome{font-size:8px}.welcome-row{min-height:106px;padding:16px 13px}.welcome-row h1{font-size:19px}.stat-card{min-height:96px;padding:11px}.stat-number{font-size:22px}.overview-grid .panel{min-height:210px}.donut{width:108px;height:108px}}

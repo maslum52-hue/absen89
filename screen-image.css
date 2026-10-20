@@ -1,0 +1,15 @@
+.login-screen{background:#f3eee6!important;background-image:linear-gradient(90deg,#ffffff08,#ffffff12),url('123.jpg')!important;background-position:center center!important;background-size:cover!important;background-repeat:no-repeat!important}
+.login-screen{background-size:contain!important;background-color:#e8e5e0!important}
+.login-school-image{display:none!important}
+/* Hilangkan branding Hadir pada panel login, sesuai permintaan. */
+.login-screen [class*="logo"],
+.login-screen [class*="brand"]{display:none!important}
+.login-screen::before{content:"SMA NEGERI 1 HALMAHERA TIMUR";position:fixed;z-index:5;top:24px;left:50%;transform:translateX(-50%);padding:12px 24px;border:1px solid rgba(255,255,255,.42);border-radius:14px;background:rgba(15,39,73,.72);box-shadow:0 8px 24px rgba(8,25,49,.2);color:#fff;font:700 14px/1.2 Arial,sans-serif;letter-spacing:.1em;text-align:center;text-shadow:none;backdrop-filter:blur(8px);white-space:nowrap}
+@media(max-width:850px){.login-screen{background-position:center center!important}}
+@media(max-width:520px){.login-screen::before{top:12px;max-width:calc(100% - 32px);padding:10px 14px;font-size:11px;white-space:normal}}
+.login-screen::before{ text-shadow:none!important; filter:none!important; box-shadow:none!important; -webkit-text-stroke:0 transparent!important; background:transparent!important; border:0!important; border-radius:0!important; padding:0!important; }
+.login-screen{background-image:url('123.jpg')!important;filter:none!important}
+.login-screen *,.login-screen::before,.login-screen::after{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.app-shell.dashboard-active{background:url('123.jpg') center center/cover fixed no-repeat!important}
+.app-shell.dashboard-active .sidebar,.app-shell.dashboard-active .app-sidebar,.app-shell.dashboard-active aside{background:rgba(15,39,73,.76)!important;background-color:rgba(15,39,73,.76)!important}
+.app-shell.dashboard-active .sidebar,.app-shell.dashboard-active .app-sidebar,.app-shell.dashboard-active aside{box-shadow:none!important;filter:none!important;text-shadow:none!important}

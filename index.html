@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#f5f7fb" />
+  <title>Hadir — Sistem Absensi Sekolah</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="modules.css" />
+  <link rel="stylesheet" href="roles.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="rainbow.css" />
+  <link rel="stylesheet" href="login-polish.css" />
+  <link rel="stylesheet" href="login-image.css" />
+  <link rel="stylesheet" href="login-fullscreen.css" />
+  <link rel="stylesheet" href="login-image-center.css" />
+  <link rel="stylesheet" href="login-fields.css" />
+  <style>@media(max-width:850px){.login-panel:before{position:absolute}}</style>
+  <link rel="stylesheet" href="school-logo.css" />
+  <link rel="stylesheet" href="dashboard-image.css" />
+  <link rel="stylesheet" href="screen-image.css" />
+  <style>.nav-item[hidden]{display:none!important}</style>
+  <style>.donut{background:conic-gradient(#2d69a3 0 88.6%,#e4b34f 88.6% 95.5%,#d98266 95.5% 100%)}</style>
+</head>
+<body>
+  <section class="login-screen" id="loginScreen">
+    <div class="login-art" aria-hidden="true"><div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div><div class="art-orbit orbit-three"></div><div class="art-spark spark-one">✦</div><div class="art-spark spark-two">✧</div><div class="art-board"><span>HADIR HARI INI</span><strong>88,6<small>%</small></strong><div class="art-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><em>● Kehadiran siswa meningkat</em></div><div class="art-caption"><b>Setiap kehadiran</b><br>adalah awal dari masa depan.</div><div class="login-art-foot">✦ &nbsp; SEKOLAH LEBIH TERTATA, BELAJAR LEBIH BERMAKNA</div></div>
+    <div class="login-panel"><a class="brand login-brand" href="#"><span class="brand-mark"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 16.5 13.1 22 25 9"/><path d="M16 3.5 27 8v7.2c0 6.5-4.7 11.1-11 13.3C9.7 26.3 5 21.7 5 15.2V8l11-4.5Z"/></svg></span><span class="brand-name">hadir<span>.</span><small>SEKOLAH DIGITAL</small></span></a><div class="login-copy"><div class="login-eyebrow"><span></span> PORTAL ADMINISTRATOR</div><h1>Selamat datang<br>kembali!</h1><p>Masuk ke ruang kendali sekolah dan mulai hari dengan data yang lebih terarah.</p></div><form class="login-form" id="loginForm"><label for="username">Username</label><div class="login-input-wrap"><span class="input-user-icon">♙</span><input id="username" name="username" type="text" placeholder="Masukkan username" autocomplete="username" required></div><button type="submit" class="login-submit">Masuk ke Dashboard <span>→</span></button><div class="login-error" id="loginError" role="alert" hidden>Email atau password tidak sesuai.</div></form><div class="login-footer">© 2026 Hadir. Sistem absensi sekolah digital.</div></div>
+  </section>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#dashboard" aria-label="Hadir, beranda">
+        <span class="brand-mark"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 16.5 13.1 22 25 9"/><path d="M16 3.5 27 8v7.2c0 6.5-4.7 11.1-11 13.3C9.7 26.3 5 21.7 5 15.2V8l11-4.5Z"/></svg></span>
+        <span class="brand-name">hadir<span>.</span><small>SEKOLAH DIGITAL</small></span>
+      </a>
+      <div class="school-picker"><img class="school-avatar school-logo" src="MAN_1_HALTIM.png" alt="Logo SMA Negeri 1 Halmahera Timur"><div class="school-info"><b>SMA Negeri 1 Halmahera Timur</b><span>Portal Admin</span></div><span class="chevron">⌄</span></div>
+      <div class="nav-label">MENU UTAMA</div>
+      <nav class="nav-list" aria-label="Navigasi utama">
+        <a class="nav-item active" href="#dashboard" data-page="Dashboard"><span class="nav-icon">▦</span><span>Dashboard</span></a>
+        <a class="nav-item" href="#siswa" data-page="Data Siswa"><span class="nav-icon">♙</span><span>Data Siswa</span></a>
+        <a class="nav-item" href="#kelas" data-page="Data Kelas"><span class="nav-icon">▤</span><span>Data Kelas</span></a>
+        <a class="nav-item" href="#piket" data-page="Guru Piket"><span class="nav-icon">◷</span><span>Guru Piket</span></a>
+        <a class="nav-item" href="#akun" data-page="Akun Pengguna"><span class="nav-icon">♙</span><span>Akun Pengguna</span></a>
+        <button class="nav-item nav-logout" id="logoutMenu" type="button" onclick="sessionStorage.removeItem('hadir-auth');window.location.reload()"><span class="nav-icon">⇥</span><span>Keluar Aplikasi</span></button>
+      </nav>
+      <div class="nav-label tools-label">MANAJEMEN</div>
+      <nav class="nav-list" aria-label="Manajemen">
+        <a class="nav-item" href="#ekspor" data-page="Ekspor Data"><span class="nav-icon">⇧</span><span>Ekspor Data</span></a>
+        <a class="nav-item" href="#pengaturan" data-page="Pengaturan Absensi"><span class="nav-icon">⚙</span><span>Pengaturan Absensi</span></a>
+        <a class="nav-item" href="#qr" data-page="Absensi QR"><span class="nav-icon">▦</span><span>Absensi QR</span><span class="nav-badge">BARU</span></a>
+        <a class="nav-item" href="#laporan" data-page="Laporan"><span class="nav-icon">▥</span><span>Laporan</span></a>
+        <a class="nav-item" href="#impor" data-page="Impor Data"><span class="nav-icon">⇩</span><span>Impor Data</span></a>
+      </nav>
+      <div class="sidebar-bottom"><div class="help-card"><div class="help-icon">◈</div><b>Data tersimpan aman</b><p>Data sekolah tersedia di ruang ini.</p><button id="helpBtn">Segarkan data <span>›</span></button></div><div class="sidebar-profile"><span class="profile-avatar">A</span><span><b>admin@gmail.com</b><small>Administrator</small></span><button id="logoutBtn" aria-label="Keluar">⇥</button></div></div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar"><button class="mobile-menu" id="mobileMenu" aria-label="Buka menu">☰</button><div class="breadcrumb">Halaman <span>/</span> <b id="crumb">Dashboard</b></div><div class="top-actions"><label class="search-box"><span>⌕</span><input id="globalSearch" placeholder="Cari apa saja..." aria-label="Cari"/><kbd>⌘ K</kbd></label><button class="icon-button notification" aria-label="Notifikasi">♧<i></i></button><div class="top-divider"></div><button class="profile" id="profileBtn"><span class="profile-avatar">AR</span><span class="profile-copy"><b>Aditya Ramadhan</b><small>Administrator</small></span><span class="chevron">⌄</span></button></div></header>
+      <div class="content">
+        <div id="dashboardView">
+        <div class="school-welcome"><img class="welcome-school-logo" src="MAN_1_HALTIM.png" alt=""> SELAMAT DATANG DI SMA NEGERI 1 HALMAHERA TIMUR</div>
+        <section class="welcome-row"><div><div class="eyebrow"><span class="live-dot"></span> SELAMAT PAGI</div><h1 id="pageTitle">Dashboard</h1><p class="subtitle" id="pageSubtitle">Ringkasan kehadiran siswa hari ini.</p></div><div class="welcome-actions"><label class="date-picker"><span>▦</span><input type="date" value="2026-10-20" aria-label="Pilih tanggal absensi"></label></div></section>
+
+        <section class="stats-grid" aria-label="Ringkasan kehadiran">
+          <article class="stat-card"><div class="stat-top"><span class="stat-title">Total Siswa</span><span class="stat-icon icon-indigo">♙</span></div><div class="stat-number">1.248</div><div class="stat-bottom"><span class="stat-note">Siswa terdaftar</span></div></article>
+          <article class="stat-card"><div class="stat-top"><span class="stat-title">Total Kelas</span><span class="stat-icon icon-purple">▤</span></div><div class="stat-number">36</div><div class="stat-bottom"><span class="stat-note">Kelas aktif</span></div></article>
+          <article class="stat-card"><div class="stat-top"><span class="stat-title">Hadir Hari Ini</span><span class="stat-icon icon-green">✓</span></div><div class="stat-number">1.106</div><div class="stat-bottom"><span class="trend trend-up">↗ 88,6%</span><span class="stat-note">dari total siswa</span></div></article>
+          <article class="stat-card"><div class="stat-top"><span class="stat-title">Terlambat</span><span class="stat-icon icon-orange">◷</span></div><div class="stat-number">18</div><div class="stat-bottom"><span class="stat-note">Perlu perhatian</span></div></article>
+        </section>
+
+        <section class="overview-grid"><article class="panel attendance-panel"><div class="panel-heading"><div><h2>Ringkasan Kehadiran</h2><p>Pantau tren kehadiran siswa secara berkala</p></div><select id="periodSelect" class="select-control" aria-label="Periode grafik"><option>7 hari terakhir</option><option>30 hari terakhir</option><option>Semester ini</option></select></div><div class="chart-legend"><span><i class="legend-dot present"></i>Hadir</span><span><i class="legend-dot absent"></i>Izin / Sakit</span><span><i class="legend-dot alpha"></i>Alpa</span></div><div class="chart-wrap"><div class="y-labels"><span>1.200</span><span>900</span><span>600</span><span>300</span><span>0</span></div><div class="chart-area"><div class="grid-lines"><i></i><i></i><i></i><i></i><i></i></div><svg class="chart-svg" viewBox="0 0 700 220" preserveAspectRatio="none" aria-label="Grafik kehadiran selama tujuh hari"><defs><linearGradient id="fillGreen" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#22b686" stop-opacity=".18"/><stop offset="1" stop-color="#22b686" stop-opacity="0"/></linearGradient></defs><path class="chart-fill" d="M0 93 C40 82 55 84 100 70 S160 83 200 59 S260 64 300 48 S360 58 400 42 S460 59 500 32 S560 48 600 25 S660 39 700 14 L700 220 L0 220Z"/><path class="chart-line" d="M0 93 C40 82 55 84 100 70 S160 83 200 59 S260 64 300 48 S360 58 400 42 S460 59 500 32 S560 48 600 25 S660 39 700 14"/><path class="secondary-line" d="M0 171 C45 158 55 164 100 150 S160 155 200 162 S260 145 300 154 S360 141 400 157 S460 144 500 151 S560 137 600 145 S660 133 700 141"/><path class="third-line" d="M0 199 C45 194 55 199 100 190 S160 199 200 192 S260 195 300 185 S360 197 400 189 S460 197 500 184 S560 190 600 182 S660 190 700 178"/><circle cx="500" cy="32" r="5" class="chart-point"/></svg><div class="x-labels"><span>Rab, 14</span><span>Kam, 15</span><span>Jum, 16</span><span>Sab, 17</span><span>Min, 18</span><span>Sen, 19</span><span>Sel, 20</span></div></div></div></article>
+          <article class="panel distribution-panel"><div class="panel-heading"><div><h2>Distribusi Kehadiran</h2><p>Status kehadiran hari ini</p></div><button class="dots-btn" aria-label="Opsi lainnya">···</button></div><div class="donut-wrap"><div class="donut"><div class="donut-center"><strong>1.248</strong><span>Total siswa</span></div></div></div><div class="distribution-list"><div><span><i class="legend-dot present"></i>Hadir</span><b>1.106 <small>88,6%</small></b></div><div><span><i class="legend-dot absent"></i>Izin / Sakit</span><b>86 <small>6,9%</small></b></div><div><span><i class="legend-dot alpha"></i>Tanpa keterangan</span><b>56 <small>4,5%</small></b></div></div><a class="text-link" href="#laporan" data-page="Laporan">Lihat laporan lengkap <span>→</span></a></article></section>
+
+        <section class="panel activity-panel"><div class="panel-heading activity-heading"><div><h2>Aktivitas Kehadiran</h2><p>Data absensi siswa terbaru hari ini</p></div><div class="activity-actions"><label class="table-search"><span>⌕</span><input id="tableSearch" placeholder="Cari nama siswa..." aria-label="Cari nama siswa"/></label><button class="button button-light filter-btn" id="filterBtn"><span>☷</span> Filter</button><button class="button button-light more-btn" aria-label="Opsi lainnya">···</button></div></div><div class="table-scroll"><table><thead><tr><th>NAMA SISWA</th><th>NIS</th><th>KELAS</th><th>JAM ABSEN</th><th>STATUS</th><th></th></tr></thead><tbody id="attendanceRows">
+          <tr><td><div class="student"><span class="student-avatar avatar-lilac">NA</span><span><b>Nadia Amalia</b><small>XI IPA 1</small></span></div></td><td>20241082</td><td>XI IPA 1</td><td>07:02 WIB</td><td><span class="status status-present"><i></i>Hadir</span></td><td><button class="row-more" aria-label="Aksi Nadia">···</button></td></tr>
+          <tr><td><div class="student"><span class="student-avatar avatar-blue">RF</span><span><b>Rizky Firmansyah</b><small>XI IPS 2</small></span></div></td><td>20241056</td><td>XI IPS 2</td><td>07:08 WIB</td><td><span class="status status-present"><i></i>Hadir</span></td><td><button class="row-more" aria-label="Aksi Rizky">···</button></td></tr>
+          <tr><td><div class="student"><span class="student-avatar avatar-peach">AP</span><span><b>Aditya Pratama</b><small>X IPA 3</small></span></div></td><td>20251124</td><td>X IPA 3</td><td>07:12 WIB</td><td><span class="status status-late"><i></i>Terlambat</span></td><td><button class="row-more" aria-label="Aksi Aditya">···</button></td></tr>
+          <tr><td><div class="student"><span class="student-avatar avatar-mint">SA</span><span><b>Siti Aisyah</b><small>XII IPA 1</small></span></div></td><td>20230931</td><td>XII IPA 1</td><td>06:54 WIB</td><td><span class="status status-present"><i></i>Hadir</span></td><td><button class="row-more" aria-label="Aksi Siti">···</button></td></tr>
+          <tr><td><div class="student"><span class="student-avatar avatar-pink">BW</span><span><b>Budi Wicaksono</b><small>XI IPA 2</small></span></div></td><td>20241097</td><td>XI IPA 2</td><td>—</td><td><span class="status status-permission"><i></i>Izin</span></td><td><button class="row-more" aria-label="Aksi Budi">···</button></td></tr>
+        </tbody></table><div class="empty-state" id="emptyState" hidden>Tidak ada siswa yang cocok dengan pencarian.</div></div><div class="table-footer"><span>Menampilkan <b>5</b> dari <b>1.248</b> siswa</span><div class="pagination"><button disabled aria-label="Halaman sebelumnya">←</button><button class="page-current">1</button><button>2</button><button>3</button><span>...</span><button>250</button><button aria-label="Halaman berikutnya">→</button></div></div></section>
+        <footer class="main-footer"><span>© 2025 Hadir. Semua hak dilindungi.</span><span>Butuh bantuan? <a href="#bantuan" id="footerHelp">Hubungi tim kami</a></span></footer>
+        </div>
+        <section id="moduleView" class="module-view" hidden></section>
+      </div>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="app-config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

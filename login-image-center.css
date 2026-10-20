@@ -1,0 +1,4 @@
+.login-screen{background:#fff!important}
+.login-school-image{position:absolute;z-index:0;left:50%;top:50%;transform:translate(-50%,-50%);display:block;width:min(100vw,177.78vh);height:auto;max-height:100vh;object-fit:contain;pointer-events:none}
+.login-panel{z-index:2}
+@media(max-width:850px){.login-screen{min-height:100vh;height:auto;background:#fff!important}.login-school-image{position:fixed;width:min(100vw,177.78vh);height:auto;max-height:100vh}.login-panel{position:relative;z-index:2}}
