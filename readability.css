@@ -66,6 +66,9 @@ body {
 .qr-camera-controls select { width: 100%; min-height: 44px; padding: 9px 12px; border: 1px solid #d8e2ef; border-radius: 10px; color: #193453; background: #fff; font: inherit; }
 #scanQr { min-height: 46px; font-size: 14px; font-weight: 700; }
 .qr-camera-tip { line-height: 1.6; }
+.chart-area { position: relative; }
+.dashboard-chart-empty { position: absolute; inset: 24% 8% auto; padding: 12px; border-radius: 10px; background: #ffffffdc; color: #8290a4; font-size: 12px; text-align: center; pointer-events: none; }
+.dashboard-chart-empty[hidden], .pagination[hidden] { display: none !important; }
 
 @media (max-width: 850px) {
   .nav-item { font-size: 14px; min-height: 44px; }

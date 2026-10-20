@@ -31,10 +31,11 @@ let qrCameraStream=null;
 let qrScanGeneration=0;
 let qrScanBusy=false;
 let selectedQrCameraId='';
+let attendanceHistoryData=[];
 let activeSupabaseSessionId=null;
 let teachersData=[];
 const openedQrSession=(location.pathname.match(/^\/QR-(HADIR-\d{8})$/i)||[])[1]?.toUpperCase()||'';
-function unlockDashboard(user){if(logoutLock)return;currentUser=user;loginScreen.hidden=true;appShell.classList.add('unlocked');if(!supabaseClient)sessionStorage.setItem('hadir-auth',JSON.stringify(user));applyRole();if(openedQrSession){showDashboard();renderPage('Absensi QR')}else showDashboard()}
+function unlockDashboard(user){if(logoutLock)return;currentUser=user;const displayName=user.name||user.username||'Pengguna';const initials=displayName.split(/\s+/).slice(0,2).map(part=>part[0]||'').join('').toUpperCase();document.querySelector('.profile-copy b').textContent=displayName;document.querySelector('.profile-copy small').textContent=user.role||'Pengguna';document.querySelector('.top-actions .profile-avatar').textContent=initials;const sideProfile=document.querySelector('.sidebar-profile');if(sideProfile){sideProfile.querySelector('b').textContent=user.email||user.username||displayName;sideProfile.querySelector('small').textContent=user.role||'Pengguna';sideProfile.querySelector('.profile-avatar').textContent=initials}loginScreen.hidden=true;appShell.classList.add('unlocked');if(!supabaseClient)sessionStorage.setItem('hadir-auth',JSON.stringify(user));applyRole();if(openedQrSession){showDashboard();renderPage('Absensi QR')}else showDashboard()}
 // Selalu minta login manual setiap halaman dibuka; sesi lokal lama sudah dibersihkan di atas.
 document.querySelector('.distribution-panel h2').textContent='Ringkasan Kehadiran';
 document.querySelector('.distribution-panel .panel-heading p').textContent='Status kehadiran hari ini';
@@ -69,42 +70,24 @@ const pageInfo={
   'Laporan':['Laporan Kehadiran','Tinjau rekap kehadiran dan status siswa.'],
   'Impor Data':['Impor Data','Masukkan data siswa dari file CSV.']
 };
-const studentData=[
-  {nis:'20241082',nisn:'0098123401',name:'Nadia Amalia',class:'XI IPA 1',gender:'Perempuan',birth:'2009-02-14',guardian:'Rahmawati',phone:'081234567801',address:'Maba, Halmahera Timur',status:'Hadir'},
-  {nis:'20241056',nisn:'0098123402',name:'Rizky Firmansyah',class:'XI IPS 2',gender:'Laki-laki',birth:'2009-06-08',guardian:'Firman Yusuf',phone:'081234567802',address:'Buli, Halmahera Timur',status:'Hadir'},
-  {nis:'20251124',nisn:'0099123403',name:'Aditya Pratama',class:'X IPA 3',gender:'Laki-laki',birth:'2010-01-22',guardian:'Suryani',phone:'081234567803',address:'Sagea, Halmahera Timur',status:'Terlambat'},
-  {nis:'20230931',nisn:'0089123404',name:'Siti Aisyah',class:'XII IPA 1',gender:'Perempuan',birth:'2008-11-03',guardian:'Abdul Karim',phone:'081234567804',address:'Soagimalaha, Halmahera Timur',status:'Hadir'},
-  {nis:'20241097',nisn:'0098123405',name:'Budi Wicaksono',class:'XI IPA 2',gender:'Laki-laki',birth:'2009-09-17',guardian:'Dewi Wicaksono',phone:'081234567805',address:'Maba, Halmahera Timur',status:'Izin'}
-];
-try{const savedStudents=JSON.parse(localStorage.getItem('hadir-students')||'null');if(Array.isArray(savedStudents)){const defaults=new Map(studentData.map(student=>[student.nis,student]));studentData.splice(0,studentData.length,...savedStudents.map(student=>({...defaults.get(student.nis),...student})))} }catch{}
-const classData=[
-  {name:'X IPA 1',level:'X',major:'IPA',teacher:'Dewi Kartika, S.Pd',room:'Ruang 10A',count:32,capacity:36,year:'2026/2027',status:'Aktif'},
-  {name:'X IPA 2',level:'X',major:'IPA',teacher:'Rina Amelia, S.Pd',room:'Ruang 10B',count:31,capacity:36,year:'2026/2027',status:'Aktif'},
-  {name:'X IPA 3',level:'X',major:'IPA',teacher:'Hendra Saputra, S.Pd',room:'Ruang 10C',count:33,capacity:36,year:'2026/2027',status:'Aktif'},
-  {name:'XI IPA 1',level:'XI',major:'IPA',teacher:'Ratna Sari, S.Pd',room:'Ruang 11A',count:34,capacity:36,year:'2026/2027',status:'Aktif'},
-  {name:'XI IPS 2',level:'XI',major:'IPS',teacher:'Agus Setiawan, S.Pd',room:'Ruang 11E',count:30,capacity:36,year:'2026/2027',status:'Aktif'},
-  {name:'XII IPA 1',level:'XII',major:'IPA',teacher:'Lina Marlina, S.Pd',room:'Ruang 12A',count:32,capacity:36,year:'2026/2027',status:'Aktif'}
-];
-try{const savedClasses=JSON.parse(localStorage.getItem('hadir-classes')||'null');if(Array.isArray(savedClasses))classData.splice(0,classData.length,...savedClasses)}catch{}
-const piketData=[
-  {day:'Senin',teacher:'Dewi Kartika, S.Pd',area:'Gerbang utama',time:'06.30–07.30'},
-  {day:'Selasa',teacher:'Agus Setiawan, S.Pd',area:'Gerbang utama',time:'06.30–07.30'},
-  {day:'Rabu',teacher:'Ratna Sari, S.Pd',area:'Lobi sekolah',time:'06.30–07.30'},
-  {day:'Kamis',teacher:'Hendra Saputra, S.Pd',area:'Gerbang utama',time:'06.30–07.30'},
-  {day:'Jumat',teacher:'Lina Marlina, S.Pd',area:'Lapangan',time:'06.30–07.15'}
-];
+const studentData=[];
+try{const savedStudents=JSON.parse(localStorage.getItem('hadir-students')||'null');if(Array.isArray(savedStudents)){const sampleNis=new Set(['20241082','20241056','20251124','20230931','20241097']);const defaults=new Map(studentData.map(student=>[student.nis,student]));studentData.splice(0,studentData.length,...savedStudents.filter(student=>!sampleNis.has(String(student.nis))).map(student=>({...defaults.get(student.nis),...student})));localStorage.setItem('hadir-students',JSON.stringify(studentData))}}catch{}
+const classData=[];
+try{const savedClasses=JSON.parse(localStorage.getItem('hadir-classes')||'null');if(Array.isArray(savedClasses)){const sampleClasses=new Set(['X IPA 1','X IPA 2','X IPA 3','XI IPA 1','XI IPS 2','XII IPA 1']);classData.splice(0,classData.length,...savedClasses.filter(item=>!sampleClasses.has(item.name)));localStorage.setItem('hadir-classes',JSON.stringify(classData))}}catch{}
+const piketData=[];
 const accountData=[
 ];
 try{const stored=JSON.parse(localStorage.getItem('hadir-accounts')||'null');if(Array.isArray(stored))accountData.splice(0,accountData.length,...stored)}catch{}
 async function loadSupabaseData(){
   if(!supabaseClient)return;
   const date=new Date().toLocaleDateString('sv-SE');
+  const historyStart=new Date(Date.now()-6*86400000).toLocaleDateString('sv-SE');
   const results=await Promise.all([
     supabaseClient.from('classes').select('*').order('class_name'),
     supabaseClient.from('students').select('*').order('full_name'),
     supabaseClient.from('teachers').select('*').order('full_name'),
     supabaseClient.from('piket_schedules').select('*').eq('is_active',true),
-    supabaseClient.from('attendance_records').select('*').eq('attendance_date',date),
+    supabaseClient.from('attendance_records').select('*').gte('attendance_date',historyStart).lte('attendance_date',date),
     supabaseClient.from('user_profiles').select('user_id,full_name,role,email,is_active').eq('is_active',true),
     supabaseClient.from('school_settings').select('*').eq('id',1).maybeSingle(),
     supabaseClient.from('attendance_sessions').select('id,session_code,status').eq('session_date',date).eq('status','aktif').maybeSingle()
@@ -116,7 +99,8 @@ async function loadSupabaseData(){
   classData.splice(0,classData.length,...classesResult.data.map(c=>({id:c.id,name:c.class_name,level:c.grade_level,major:c.major,teacher:teachersById.get(c.homeroom_teacher_id)?.full_name||'—',teacherId:c.homeroom_teacher_id,room:c.room_name||'—',count:0,capacity:c.capacity,year:c.academic_year,status:c.is_active?'Aktif':'Nonaktif'})));
   const classesById=new Map(classData.map(c=>[c.id,c]));
   for(const student of studentsResult.data){const cl=classesById.get(student.class_id);if(cl)cl.count++}
-  const attendanceByStudent=new Map(attendanceResult.data.map(record=>[record.student_id,record]));
+  attendanceHistoryData=attendanceResult.data||[];
+  const attendanceByStudent=new Map(attendanceHistoryData.filter(record=>record.attendance_date===date).map(record=>[record.student_id,record]));
   const statusNames={hadir:'Hadir',terlambat:'Terlambat',izin:'Izin',sakit:'Sakit',alpa:'Alpa'};
   studentData.splice(0,studentData.length,...studentsResult.data.map(s=>{const record=attendanceByStudent.get(s.id);return{id:s.id,nis:s.nis,nisn:s.nisn||'',name:s.full_name,class:classesById.get(s.class_id)?.name||'—',classId:s.class_id,gender:s.gender==='laki_laki'?'Laki-laki':s.gender==='perempuan'?'Perempuan':'—',birth:s.date_of_birth||'',guardian:s.guardian_name||'',phone:s.guardian_phone||'',address:s.address||'',status:record?statusNames[record.status]||'Belum Absen':'Belum Absen',absentAt:record?new Date(record.scanned_at).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):''}}));
   piketData.splice(0,piketData.length,...schedulesResult.data.map(p=>({id:p.id,day:p.day_of_week,teacher:teachersById.get(p.teacher_id)?.full_name||'—',teacherId:p.teacher_id,area:p.duty_area,time:`${String(p.start_time).slice(0,5)}–${String(p.end_time).slice(0,5)}`})));
@@ -125,6 +109,49 @@ async function loadSupabaseData(){
   const setting=settingsResult.data;if(setting){const values=JSON.parse(localStorage.getItem('hadir-settings')||'["06:30","07:00","15","","","100",true,true,false]');values[0]=String(setting.attendance_start).slice(0,5);values[1]=String(setting.on_time_until).slice(0,5);values[2]=String(setting.late_tolerance_minutes);values[3]=setting.location_latitude??'';values[4]=setting.location_longitude??'';values[5]=String(setting.attendance_radius_meters);values[6]=setting.qr_attendance_enabled;values[8]=setting.saturday_is_holiday;localStorage.setItem('hadir-settings',JSON.stringify(values))}
 }
 const h=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function renderDashboardData(){
+  const number=value=>new Intl.NumberFormat('id-ID').format(value);
+  const datePicker=document.querySelector('.date-picker input');if(datePicker)datePicker.value=new Date().toLocaleDateString('sv-SE');
+  const total=studentData.length,activeClasses=classData.filter(item=>item.status!=='Nonaktif').length;
+  const countStatus=status=>studentData.filter(student=>student.status===status).length;
+  const present=countStatus('Hadir')+countStatus('Terlambat'),late=countStatus('Terlambat');
+  const excused=countStatus('Izin')+countStatus('Sakit'),alpha=countStatus('Alpa');
+  const statNumbers=document.querySelectorAll('.stat-number');
+  [total,activeClasses,present,late].forEach((value,index)=>{if(statNumbers[index])statNumbers[index].textContent=number(value)});
+  const statNotes=document.querySelectorAll('.stat-card .stat-note');
+  if(statNotes[0])statNotes[0].textContent='Siswa terdaftar';
+  if(statNotes[1])statNotes[1].textContent='Kelas aktif';
+  if(statNotes[2])statNotes[2].textContent=total?`dari ${number(total)} siswa`:'Belum ada siswa terdaftar';
+  if(statNotes[3])statNotes[3].textContent=late?'Perlu perhatian':'Tidak ada keterlambatan';
+  const trend=document.querySelector('.stat-card .trend');if(trend)trend.textContent=total?`↗ ${((present/total)*100).toLocaleString('id-ID',{maximumFractionDigits:1})}%`:'—';
+  const donut=document.querySelector('.donut');
+  const donutCenter=document.querySelector('.donut-center');
+  if(donut){const presentShare=total?present/total*100:0,excusedShare=total?excused/total*100:0;donut.style.background=total?`conic-gradient(#2d69a3 0 ${presentShare}%,#e4b34f ${presentShare}% ${presentShare+excusedShare}%,#d98266 ${presentShare+excusedShare}% 100%)`:'conic-gradient(#dce4ee 0 100%)'}
+  if(donutCenter)donutCenter.innerHTML=`<strong>${number(total)}</strong><span>Total siswa</span>`;
+  const distribution=document.querySelectorAll('.distribution-list>div');
+  const distributionValues=[present,excused,Math.max(0,total-present-excused)];
+  const distributionLabels=['Hadir','Izin / Sakit','Alpa / Belum absen'];
+  distribution.forEach((row,index)=>{const label=row.querySelector('span');const value=row.querySelector('b');const amount=distributionValues[index]||0;if(label)label.innerHTML=`<i class="legend-dot ${index===0?'present':index===1?'absent':'alpha'}"></i>${distributionLabels[index]}`;if(value)value.innerHTML=`${number(amount)} <small>${total?((amount/total)*100).toLocaleString('id-ID',{maximumFractionDigits:1}):'0'}%</small>`});
+  const todayRows=studentData.filter(student=>['Hadir','Terlambat','Izin','Sakit','Alpa'].includes(student.status)).sort((a,b)=>String(b.absentAt||'').localeCompare(String(a.absentAt||'')));
+  const tableBody=document.getElementById('attendanceRows');
+  if(tableBody){const avatarClasses=['avatar-lilac','avatar-blue','avatar-peach','avatar-mint','avatar-pink'];const statusClasses={Hadir:'status-present',Terlambat:'status-late',Izin:'status-permission',Sakit:'status-permission',Alpa:'status-late'};tableBody.innerHTML=todayRows.map((student,index)=>{const initials=String(student.name||'').trim().split(/\s+/).slice(0,2).map(part=>part[0]||'').join('').toUpperCase()||'S';const statusClass=statusClasses[student.status]||'status-permission';return `<tr><td><div class="student"><span class="student-avatar ${avatarClasses[index%avatarClasses.length]}">${h(initials)}</span><span><b>${h(student.name)}</b><small>${h(student.class||'—')}</small></span></div></td><td>${h(student.nis)}</td><td>${h(student.class||'—')}</td><td>${h(student.absentAt||'—')}${student.absentAt?' WIB':''}</td><td><span class="status ${statusClass}"><i></i>${h(student.status)}</span></td><td></td></tr>`}).join('')}
+  const emptyState=document.getElementById('emptyState');if(emptyState){emptyState.hidden=todayRows.length>0;emptyState.textContent=studentData.length?'Belum ada catatan absensi hari ini.':'Belum ada data siswa. Tambahkan data siswa atau impor data untuk mulai menggunakan absensi.'}
+  const footer=document.querySelector('.table-footer>span');if(footer)footer.innerHTML=`Menampilkan <b>${todayRows.length}</b> dari <b>${number(total)}</b> siswa`;
+  const pagination=document.querySelector('.table-footer .pagination');if(pagination)pagination.hidden=true;
+  const recordsByDate=new Map();for(const record of attendanceHistoryData){const counts=recordsByDate.get(record.attendance_date)||{present:0,excused:0,alpha:0};if(record.status==='hadir'||record.status==='terlambat')counts.present++;else if(record.status==='izin'||record.status==='sakit')counts.excused++;else if(record.status==='alpa')counts.alpha++;recordsByDate.set(record.attendance_date,counts)}
+  const days=Array.from({length:7},(_,index)=>{const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-(6-index));return{date:d.toLocaleDateString('sv-SE'),label:d.toLocaleDateString('id-ID',{weekday:'short',day:'numeric'}),...(recordsByDate.get(d.toLocaleDateString('sv-SE'))||{present:0,excused:0,alpha:0})}});
+  const maxValue=Math.max(1,...days.flatMap(day=>[day.present,day.excused,day.alpha]));
+  const makePath=key=>days.map((day,index)=>`${index?'L':'M'}${(index*700/6).toFixed(1)} ${(205-day[key]/maxValue*185).toFixed(1)}`).join(' ');
+  const paths={'.chart-line':makePath('present'),'.secondary-line':makePath('excused'),'.third-line':makePath('alpha')};
+  for(const[selector,path]of Object.entries(paths)){const element=document.querySelector(selector);if(element)element.setAttribute('d',path)}
+  const fill=document.querySelector('.chart-fill');if(fill){const line=makePath('present');fill.setAttribute('d',line?`${line} L700 220 L0 220 Z`:'')}
+  const chartPoint=document.querySelector('.chart-point');if(chartPoint){const last=days[days.length-1];chartPoint.setAttribute('cx','700');chartPoint.setAttribute('cy',(205-last.present/maxValue*185).toFixed(1));chartPoint.setAttribute('display',attendanceHistoryData.length?'':'none')}
+  const xLabels=document.querySelector('.x-labels');if(xLabels)xLabels.innerHTML=days.map(day=>`<span>${h(day.label)}</span>`).join('');
+  const yLabels=document.querySelector('.y-labels');if(yLabels){const ceiling=Math.ceil(maxValue/4)*4||4;yLabels.innerHTML=Array.from({length:5},(_,index)=>`<span>${number(Math.round(ceiling*(4-index)/4))}</span>`).join('')}
+  const chartArea=document.querySelector('.chart-area');let chartEmpty=document.getElementById('dashboardChartEmpty');
+  if(chartArea&&!chartEmpty){chartEmpty=document.createElement('div');chartEmpty.id='dashboardChartEmpty';chartEmpty.className='dashboard-chart-empty';chartArea.append(chartEmpty)}
+  if(chartEmpty){const hasHistory=attendanceHistoryData.length>0;chartEmpty.hidden=hasHistory;chartEmpty.textContent=hasHistory?'':'Grafik akan tampil setelah absensi dicatat.'}
+}
 function downloadCsv(filename,headers,rows){const csv=[headers,...rows].map(row=>row.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(';')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 function exportDataset(kind){
   if(kind==='students')return{filename:'data-siswa-sma-negeri-1-halmahera-timur.csv',headers:['NIS','NISN','Nama Lengkap','Kelas','Jenis Kelamin','Tanggal Lahir','Nama Orang Tua/Wali','No. HP Orang Tua/Wali','Alamat','Status Kehadiran'],rows:studentData.map(s=>[s.nis,s.nisn,s.name,s.class,s.gender,s.birth,s.guardian,s.phone,s.address,s.status])};
@@ -165,7 +192,7 @@ async function recordQrAttendance(value){
   if(!student){showToast(`QR tidak dikenal: ${nis.slice(0,32)}`);return}
   const now=new Date(),date=now.toLocaleDateString('sv-SE'),settings=JSON.parse(localStorage.getItem('hadir-settings')||'[]'),cutoff=settings[1]||'07:00',time=now.toTimeString().slice(0,5),status=time>cutoff?'terlambat':'hadir';
   if(supabaseClient){if(!student.id){showToast('Siswa belum tersinkron ke Supabase. Muat ulang data dan coba lagi.');return}const{error}=await supabaseClient.from('attendance_records').upsert({session_id:activeSupabaseSessionId,student_id:student.id,attendance_date:date,status,source:'qr',scanned_at:now.toISOString(),marked_by:currentUser?.id||null},{onConflict:'student_id,attendance_date'});if(error){showToast(`Gagal menyimpan absensi: ${error.message}`);return}await loadSupabaseData();showToast(`${student.name} berhasil tercatat ${status==='hadir'?'hadir':'terlambat'}`);renderPage('Absensi QR');return}
-  student.status=status==='hadir'?'Hadir':'Terlambat';student.absentAt=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});localStorage.setItem('hadir-students',JSON.stringify(studentData));showToast(`${student.name} berhasil tercatat hadir`);renderPage('Absensi QR');
+  student.status=status==='hadir'?'Hadir':'Terlambat';student.absentAt=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});attendanceHistoryData.push({attendance_date:date,status,scanned_at:now.toISOString()});localStorage.setItem('hadir-students',JSON.stringify(studentData));showToast(`${student.name} berhasil tercatat hadir`);renderPage('Absensi QR');
 }
 async function toggleSupabaseSession(){
   const date=new Date().toLocaleDateString('sv-SE');
@@ -232,14 +259,15 @@ function renderPage(page){
     body=`<div class="qr-layout"><article class="qr-session-card"><div class="qr-live"><i></i> SESI ABSENSI ${window.hadirQrActive?'AKTIF':'BELUM DIMULAI'}</div><h3>Absensi Siswa</h3><p>Mulai sesi, lalu tampilkan QR ini agar siswa dapat memindainya.</p><div class="qr-code" id="qrCode" aria-label="Kode QR sesi absensi"></div><div class="qr-session-id">KODE SESI <b id="sessionCode">HADIR-${new Date().toISOString().slice(0,10).replaceAll('-','')}</b></div><button class="module-btn primary wide" id="startQr">${window.hadirQrActive?'Akhiri Sesi':'Mulai Sesi Absensi'}</button></article><article class="qr-info-card"><h3>Pemindai QR Siswa</h3><p class="qr-scan-help">Gunakan kamera untuk membaca QR atau barcode siswa yang berisi NIS, atau masukkan NIS secara manual.</p><video id="qrVideo" class="qr-video" playsinline hidden></video><div class="qr-camera-tip">Dekatkan kartu ke kamera dan pastikan kode terlihat jelas di layar.</div><button type="button" class="module-btn secondary wide" id="scanQr">Buka Kamera Pemindai</button><form class="qr-manual-form" id="qrManualForm"><label for="qrNis">NIS siswa</label><div><input id="qrNis" autocomplete="off" placeholder="Contoh: 20241082" required><button class="module-btn primary" type="submit">Catat Hadir</button></div></form><div class="module-callout"><b>Status</b><span>${window.hadirQrActive?'Sesi aktif. Absensi QR siap digunakan.':'Mulai sesi absensi terlebih dahulu untuk mencatat kehadiran.'}</span></div></article></div>`;
   }else if(page==='Laporan'){
     action='<button class="module-btn secondary" data-export="attendance">Unduh Laporan ↓</button>';
-    body=`<div class="report-stats"><div><span>Total Siswa</span><b>1.248</b></div><div><span>Hadir</span><b>1.106 <small>88,6%</small></b></div><div><span>Izin / Sakit</span><b>86 <small>6,9%</small></b></div><div><span>Alpa</span><b>56 <small>4,5%</small></b></div></div><div class="module-toolbar"><label class="module-select">Tanggal <input type="date" value="2026-10-20"></label><label class="module-select">Kelas <select><option>Semua Kelas</option>${classData.map(c=>`<option>${h(c.name)}</option>`).join('')}</select></label></div>${tableMarkup(['Nama Siswa','NIS','Kelas','Jam Absen','Status'],studentData.map(s=>[s.name,s.nis,s.class,s.status==='Izin'?'—':'07:02 WIB',s.status]))}`;
+    const total=studentData.length,present=studentData.filter(s=>s.status==='Hadir'||s.status==='Terlambat').length,excused=studentData.filter(s=>s.status==='Izin'||s.status==='Sakit').length,alpha=studentData.filter(s=>s.status==='Alpa').length;const percent=value=>total?`${(value/total*100).toLocaleString('id-ID',{maximumFractionDigits:1})}%`:'0%';
+    body=`<div class="report-stats"><div><span>Total Siswa</span><b>${total}</b></div><div><span>Hadir</span><b>${present} <small>${percent(present)}</small></b></div><div><span>Izin / Sakit</span><b>${excused} <small>${percent(excused)}</small></b></div><div><span>Alpa</span><b>${alpha} <small>${percent(alpha)}</small></b></div></div><div class="module-toolbar"><label class="module-select">Tanggal <input type="date" value="${new Date().toLocaleDateString('sv-SE')}"></label><label class="module-select">Kelas <select><option>Semua Kelas</option>${classData.map(c=>`<option>${h(c.name)}</option>`).join('')}</select></label></div>${tableMarkup(['Nama Siswa','NIS','Kelas','Jam Absen','Status'],studentData.map(s=>[s.name,s.nis,s.class,s.absentAt?`${s.absentAt} WIB`:'—',s.status]))}`;
   }else if(page==='Impor Data'){
     body=`<div class="import-card"><div class="import-icon">⇧</div><h3>Impor daftar siswa</h3><p>Pilih file CSV dengan kolom <b>NIS, Nama, Kelas, Jenis Kelamin</b>. Baris pertama digunakan sebagai judul kolom.</p><label class="file-picker">Pilih file CSV<input id="importFile" type="file" accept=".csv,text/csv"></label><div id="importPreview" class="import-preview">Belum ada file yang dipilih.</div><button id="importApply" class="module-btn primary" disabled>Impor Data</button></div>`;
   }
   view.innerHTML=pageFrame(page,body,action);view.hidden=false;document.getElementById('dashboardView').hidden=true;appShell.classList.remove('dashboard-active');if(page==='Absensi QR'){const code=document.getElementById('sessionCode').textContent;const base=(window.HADIR_BASE_URL||window.location.origin).replace(/\/$/,'');const sessionUrl=`${base}/QR-${code}`;document.getElementById('qrCode').innerHTML=createQrSvg(sessionUrl);const openLink=document.createElement('a');openLink.className='qr-open-link';openLink.href=sessionUrl;openLink.target='_blank';openLink.rel='noopener';openLink.textContent='Buka Absensi QR di Browser ↗';document.getElementById('qrCode').after(openLink)}
   bindModuleActions(page);
 }
-function showDashboard(){document.getElementById('moduleView').hidden=true;document.getElementById('dashboardView').hidden=false;appShell.classList.add('dashboard-active');document.querySelectorAll('.nav-item').forEach(item=>item.classList.toggle('active',item.dataset.page==='Dashboard'))}
+function showDashboard(){renderDashboardData();document.getElementById('moduleView').hidden=true;document.getElementById('dashboardView').hidden=false;appShell.classList.add('dashboard-active');document.querySelectorAll('.nav-item').forEach(item=>item.classList.toggle('active',item.dataset.page==='Dashboard'))}
 async function logoutApplication(){logoutLock=true;localStorage.setItem('hadir-logout','true');++authFlowGeneration;if(supabaseClient){const{error}=await supabaseClient.auth.signOut({scope:'local'});if(error)showToast(`Sesi lokal dihapus, tetapi Supabase memberi peringatan: ${error.message}`)}sessionStorage.removeItem('hadir-auth');currentUser=null;activeSupabaseSessionId=null;window.hadirQrActive=false;appShell.classList.remove('unlocked');loginScreen.hidden=false;document.getElementById('username').value='';document.getElementById('password').value='';document.getElementById('loginError').hidden=true;document.querySelectorAll('.nav-item').forEach(item=>item.hidden=false)}
 function bindModuleActions(page){
   const search=document.getElementById('moduleSearch');if(search)search.addEventListener('input',()=>{const q=search.value.toLowerCase();document.querySelectorAll('.module-table tbody tr').forEach(row=>row.hidden=!row.textContent.toLowerCase().includes(q))});
@@ -292,7 +320,7 @@ document.querySelectorAll('[data-page]').forEach(link=>link.addEventListener('cl
   if(page==='Dashboard'){showDashboard()}else renderPage(page);
 }));
 document.getElementById('mobileMenu').addEventListener('click',()=>document.getElementById('sidebar').classList.toggle('open'));
-function applyAttendanceFilters(){const query=document.getElementById('tableSearch').value.trim().toLowerCase(),status=document.getElementById('attendanceStatusFilter')?.value||'',className=document.getElementById('attendanceClassFilter')?.value||'';let shown=0;document.querySelectorAll('#attendanceRows tr').forEach(row=>{const matchesText=row.textContent.toLowerCase().includes(query),matchesStatus=!status||row.cells[4].textContent.trim()===status,matchesClass=!className||row.cells[2].textContent.trim()===className;row.hidden=!(matchesText&&matchesStatus&&matchesClass);if(!row.hidden)shown++});document.getElementById('emptyState').hidden=shown!==0;const footer=document.querySelector('.table-footer>span');if(footer)footer.innerHTML=`Menampilkan <b>${shown}</b> dari <b>1.248</b> siswa`}
+function applyAttendanceFilters(){const query=document.getElementById('tableSearch').value.trim().toLowerCase(),status=document.getElementById('attendanceStatusFilter')?.value||'',className=document.getElementById('attendanceClassFilter')?.value||'';let shown=0;document.querySelectorAll('#attendanceRows tr').forEach(row=>{const matchesText=row.textContent.toLowerCase().includes(query),matchesStatus=!status||row.cells[4].textContent.trim()===status,matchesClass=!className||row.cells[2].textContent.trim()===className;row.hidden=!(matchesText&&matchesStatus&&matchesClass);if(!row.hidden)shown++});const emptyState=document.getElementById('emptyState');if(emptyState){emptyState.hidden=shown!==0;if(shown===0)emptyState.textContent=studentData.length?'Tidak ada data absensi yang sesuai filter.':'Belum ada data siswa. Tambahkan data siswa atau impor data untuk mulai menggunakan absensi.'}const footer=document.querySelector('.table-footer>span');if(footer)footer.innerHTML=`Menampilkan <b>${shown}</b> dari <b>${new Intl.NumberFormat('id-ID').format(studentData.length)}</b> siswa`}
 document.getElementById('tableSearch').addEventListener('input',applyAttendanceFilters);
 document.getElementById('globalSearch').addEventListener('keydown',event=>{if(event.key==='Enter'&&event.target.value.trim()){document.getElementById('tableSearch').value=event.target.value;document.getElementById('tableSearch').dispatchEvent(new Event('input'));showToast('Pencarian diterapkan pada aktivitas kehadiran')}});
 document.getElementById('globalSearch').addEventListener('input',event=>{if(event.target.value.trim().length>1){document.getElementById('tableSearch').value=event.target.value;document.getElementById('tableSearch').dispatchEvent(new Event('input'))}});
